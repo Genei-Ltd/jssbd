@@ -1,3 +1,7 @@
 node_modules/
 dist/
 pnpm-lock.yaml
+.context/
+src/data.json
+src/clean-data.json
+tests/fixtures/upstream.json

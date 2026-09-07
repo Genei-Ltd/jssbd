@@ -11,7 +11,13 @@
     "url": "https://github.com/Genei-Ltd/jssbd/issues"
   },
   "homepage": "https://github.com/Genei-Ltd/jssbd#readme",
-  "keywords": [],
+  "keywords": [
+    "sentence",
+    "segmentation",
+    "nlp",
+    "pysbd",
+    "typescript"
+  ],
   "type": "module",
   "files": [
     "dist"
@@ -26,7 +32,8 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "lint": "eslint .",
-    "prepublishOnly": "pnpm run tc && pnpm run lint && pnpm run test --run && pnpm run build",
+    "check": "pnpm run tc && pnpm run lint && pnpm run format && pnpm run test --run tests && pnpm run build",
+    "prepublishOnly": "pnpm run check",
     "tc": "tsc -p tsconfig.json --pretty --noEmit",
     "test": "vitest"
   },

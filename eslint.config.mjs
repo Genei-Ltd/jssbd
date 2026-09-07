@@ -27,7 +27,7 @@ export default defineConfig([
       reportUnusedInlineConfigs: 'error',
     },
   },
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '.context']),
   {
     name: 'template/javascript',
     files: jsFiles,
