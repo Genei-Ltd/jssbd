@@ -1,0 +1,58 @@
+{
+  "name": "@coloop-ai/jssbd",
+  "version": "0.1.0",
+  "description": "JavaScript sentence boundary detection ported from pySBD",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Genei-Ltd/jssbd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Genei-Ltd/jssbd/issues"
+  },
+  "homepage": "https://github.com/Genei-Ltd/jssbd#readme",
+  "keywords": [],
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.33.1",
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint": "eslint .",
+    "prepublishOnly": "pnpm run tc && pnpm run lint && pnpm run test --run && pnpm run build",
+    "tc": "tsc -p tsconfig.json --pretty --noEmit",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.0.1",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.3",
+    "tsdown": "~0.22.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1",
+    "vitest": "^4.1.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  }
+}
