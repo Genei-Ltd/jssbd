@@ -29,10 +29,15 @@ describe('upstream sentence boundaries', () => {
         clean: fixture.clean,
       })
       const sentences = segmenter.segment(fixture.text)
-      const actual = fixture.strip ? sentences.map(strip) : sentences
+      const actual =
+        fixture.strip && Array.isArray(sentences)
+          ? sentences.map(strip)
+          : sentences
       expect(actual).toEqual(fixture.expected)
       if (fixture.reconstruct) {
-        expect(actual.join(' ')).toBe(fixture.text)
+        expect(Array.isArray(actual) ? actual.join(' ') : actual).toBe(
+          fixture.text,
+        )
       }
     })
   }

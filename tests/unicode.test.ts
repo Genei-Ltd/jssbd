@@ -3,6 +3,24 @@ import { Segmenter } from '../src/index'
 import type { LanguageCode } from '../src/index'
 
 describe('Python Unicode behavior', () => {
+  it('uses Unicode 15.1 classification for abbreviation guards', () => {
+    expect(
+      new Segmenter({ language: 'es' }).segment('{etc} \u1c89 etc. l'),
+    ).toEqual(['{etc} \u1c89 etc. l'])
+  })
+
+  it('retains markup whose tag names were unassigned in Unicode 15.1', () => {
+    expect(
+      new Segmenter({ clean: true }).segment('<\u1c89>Hi.</\u1c89> Next.'),
+    ).toEqual(['<\u1c89>Hi.', '</\u1c89> Next.'])
+  })
+
+  it('does not treat later Unicode digits as numbered list markers', () => {
+    expect(
+      new Segmenter().segment('\u{10d41}. First item 2. Second item.'),
+    ).toEqual(['\u{10d41}. ', 'First item 2. ', 'Second item.'])
+  })
+
   const cases: { language: LanguageCode; text: string; expected: string[] }[] =
     [
       {
@@ -111,6 +129,14 @@ describe('Python Unicode behavior', () => {
     expect(() =>
       new Segmenter({ clean: true }).segment(String.raw`Hi.There\p`),
     ).toThrow(SyntaxError)
+  })
+
+  it('distinguishes invalid replacement group syntax from an unknown group', () => {
+    const segmenter = new Segmenter({ clean: true })
+    expect(() => segmenter.segment(String.raw`Hi.There\g<!>`)).toThrow(
+      SyntaxError,
+    )
+    expect(() => segmenter.segment('Hi.There\\g<a\u0301>')).toThrow(RangeError)
   })
 
   it('retains Python integer parsing errors for information separators in list markers', () => {

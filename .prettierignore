@@ -5,3 +5,5 @@ pnpm-lock.yaml
 src/data.json
 src/clean-data.json
 tests/fixtures/upstream.json
+
+src/unicode-data.json

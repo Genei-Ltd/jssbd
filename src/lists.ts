@@ -1,5 +1,6 @@
 import data from './data.json'
 import { applyRules, pattern, trimWhitespace } from './regex'
+import { decimalValue } from './unicode'
 
 const regex = data.listRegex
 const romanNumerals = data.romanNumerals
@@ -13,12 +14,11 @@ function decimalNumber(text: string): number {
   }
   let value = 0
   for (const character of trimWhitespace(text)) {
-    const code = character.codePointAt(0) ?? 0
-    let start = code
-    while (start > 0 && /\p{Nd}/u.test(String.fromCodePoint(start - 1))) {
-      start--
+    const digit = decimalValue(character)
+    if (digit === undefined) {
+      throw new RangeError('Invalid decimal list marker.')
     }
-    value = value * 10 + ((code - start) % 10)
+    value = value * 10 + digit
   }
   return value
 }
@@ -53,7 +53,7 @@ export function replaceListItems(input: string, language: string): string {
       ? regex.ALPHABETICAL_LIST_WITH_PARENS
       : regex.ALPHABETICAL_LIST_WITH_PERIODS
     const values = Array.from(
-      text.matchAll(pattern(expression)),
+      pattern(expression).finditer(text),
       (match) => match[0],
     ).filter((value) => alphabet.includes(value))
     for (const [index, value] of values.entries()) {
@@ -80,7 +80,7 @@ export function replaceListItems(input: string, language: string): string {
     replacement: string,
     strip: boolean,
   ) {
-    const values = Array.from(text.matchAll(pattern(source)), (match) =>
+    const values = Array.from(pattern(source).finditer(text), (match) =>
       decimalNumber(match[0]),
     )
     for (const [index, value] of values.entries()) {

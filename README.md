@@ -61,6 +61,12 @@ HTML tags and repairing some line breaks. It changes the source text, so
 `clean: true` and `charSpan: true` cannot be combined. That combination throws
 `RangeError`.
 
+When cleaning removes all of a nonempty input, pySBD returns the empty string
+`''`. This package preserves that result: for example,
+`new Segmenter({ clean: true }).segment('<b>')` returns `''`. Cleaning-enabled
+results therefore have type `string[] | ''`. Originally empty inputs still return
+an empty array.
+
 PDF cleanup and the Python `doc_type` option are not supported.
 
 ## Options and types
@@ -99,15 +105,23 @@ Supported languages:
 
 ## Compatibility
 
+The reference is pySBD 0.3.4 on CPython 3.13, using Unicode 15.1.0. Unicode
+character classes and case mappings are bundled, so upgrading Node.js does not
+change sentence boundaries. No Python installation is needed at runtime.
+
 The test suite includes all 484 non-PDF cases authored in pySBD 0.3.4, including
 three upstream expected failures. It also checks JavaScript Unicode behavior.
 See the [test inventory](tests/README.md) for the original sources, exclusions,
-and fixture regeneration commands.
+and fixture regeneration commands. The [differential checker](scripts/README.md)
+compares actual Python and JavaScript results in all modes, including upstream's
+expected failures, and saves reproducible inputs and mismatch reports.
 
 The port retains upstream segmentation behavior, including known limitations;
 it does not guarantee correct linguistic boundaries for every input. Cleaning
 also retains Python's backslash replacement behavior, which can reject malformed
-escape sequences in connected words.
+escape sequences in connected words. Python regex errors become `SyntaxError`;
+Python value, index, and overflow errors become `RangeError`. Exception messages
+use JavaScript terminology and are not required to match Python verbatim.
 
 ## License
 

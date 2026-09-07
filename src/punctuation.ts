@@ -33,13 +33,13 @@ export function replaceBetweenPunctuation(
   // The lookahead and backreference preserve PySBD's escaped-quote matching
   // without backtracking through quote contents.
   if (language === 'zh') {
-    replace(String.raw`《(?=(?<tmp>[^》\\]+|\\{2}|\\.)*)\k<tmp>》`)
-    replace(String.raw`「(?=(?<tmp>[^」\\]+|\\{2}|\\.)*)\k<tmp>」`)
+    replace(String.raw`《(?=(?P<tmp>[^》\\]+|\\{2}|\\.)*)(?P=tmp)》`)
+    replace(String.raw`「(?=(?P<tmp>[^」\\]+|\\{2}|\\.)*)(?P=tmp)」`)
     return text
   }
   if (language === 'ja') {
-    replace(String.raw`（(?=(?<tmp>[^（）]+|\\{2}|\\.)*)\k<tmp>）`)
-    replace(String.raw`「(?=(?<tmp>[^「」]+|\\{2}|\\.)*)\k<tmp>」`)
+    replace(String.raw`（(?=(?P<tmp>[^（）]+|\\{2}|\\.)*)(?P=tmp)）`)
+    replace(String.raw`「(?=(?P<tmp>[^「」]+|\\{2}|\\.)*)(?P=tmp)」`)
     return text
   }
   if (!(
@@ -51,20 +51,20 @@ export function replaceBetweenPunctuation(
   replace(String.raw`(?<=\s)‘(?:[^’]|’[a-zA-Z])*’`)
   if (language === 'de') {
     if (text.includes('„')) {
-      replace(String.raw`„(?=(?<tmp>[^“\\]+|\\{2}|\\.)*)\k<tmp>“`)
+      replace(String.raw`„(?=(?P<tmp>[^“\\]+|\\{2}|\\.)*)(?P=tmp)“`)
     } else if (text.includes(',,')) {
-      replace(String.raw`,,(?=(?<tmp>[^“\\]+|\\{2}|\\.)*)\k<tmp>“`)
+      replace(String.raw`,,(?=(?P<tmp>[^“\\]+|\\{2}|\\.)*)(?P=tmp)“`)
     }
   } else {
-    replace(String.raw`"(?=(?<tmp>[^"\\]+|\\{2}|\\.)*)\k<tmp>"`)
+    replace(String.raw`"(?=(?P<tmp>[^"\\]+|\\{2}|\\.)*)(?P=tmp)"`)
   }
-  replace(String.raw`\[(?=(?<tmp>[^\]\\]+|\\{2}|\\.)*)\k<tmp>\]`)
-  replace(String.raw`\((?=(?<tmp>[^()\\]+|\\{2}|\\.)*)\k<tmp>\)`)
-  replace(String.raw`«(?=(?<tmp>[^»\\]+|\\{2}|\\.)*)\k<tmp>»`)
+  replace(String.raw`\[(?=(?P<tmp>[^\]\\]+|\\{2}|\\.)*)(?P=tmp)\]`)
+  replace(String.raw`\((?=(?P<tmp>[^()\\]+|\\{2}|\\.)*)(?P=tmp)\)`)
+  replace(String.raw`«(?=(?P<tmp>[^»\\]+|\\{2}|\\.)*)(?P=tmp)»`)
   replace(String.raw`--[^-]*--`)
-  replace(String.raw`“(?=(?<tmp>[^”\\]+|\\{2}|\\.)*)\k<tmp>”`)
+  replace(String.raw`“(?=(?P<tmp>[^”\\]+|\\{2}|\\.)*)(?P=tmp)”`)
   if (language === 'sk') {
-    replace(String.raw`„(?=(?<tmp>[^“\\]+|\\{2}|\\.)*)\k<tmp>“`)
+    replace(String.raw`„(?=(?P<tmp>[^“\\]+|\\{2}|\\.)*)(?P=tmp)“`)
   }
   if (language === 'kk') {
     text = text

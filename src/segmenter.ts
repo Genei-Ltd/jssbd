@@ -12,23 +12,33 @@ export type SentenceSpan = {
   end: number
 }
 
-export type SegmenterOptions<WithSpans extends boolean = boolean> = {
+export type SegmenterOptions<
+  WithSpans extends boolean = boolean,
+  WithClean extends boolean = boolean,
+> = {
   language?: LanguageCode
-  clean?: boolean
+  clean?: WithClean
   charSpan?: WithSpans
 }
 
-export class Segmenter<WithSpans extends boolean = false> {
+export class Segmenter<
+  WithSpans extends boolean = false,
+  WithClean extends boolean = false,
+> {
   readonly language: LanguageCode
   readonly clean: boolean
   readonly charSpan: boolean
 
   constructor(
     ...args: false extends WithSpans
-      ? [options?: SegmenterOptions<WithSpans>]
-      : [options: SegmenterOptions<WithSpans> & { charSpan: WithSpans }]
+      ? [options?: SegmenterOptions<WithSpans, WithClean>]
+      : [
+          options: SegmenterOptions<WithSpans, WithClean> & {
+            charSpan: WithSpans
+          },
+        ]
   ) {
-    const options: SegmenterOptions<WithSpans> = args[0] ?? {}
+    const options: SegmenterOptions<WithSpans, WithClean> = args[0] ?? {}
     const { language = 'en', clean = false, charSpan = false } = options
     if (!isLanguageCode(language)) {
       throw new RangeError(
@@ -47,8 +57,12 @@ export class Segmenter<WithSpans extends boolean = false> {
 
   segment(
     text: string | null | undefined,
-  ): WithSpans extends true ? SentenceSpan[] : string[]
-  segment(text: string | null | undefined): SentenceSpan[] | string[] {
+  ): WithSpans extends true
+    ? SentenceSpan[]
+    : WithClean extends false
+      ? string[]
+      : string[] | ''
+  segment(text: string | null | undefined): SentenceSpan[] | string[] | '' {
     if (text === null || text === undefined || text === '') {
       return []
     }
@@ -56,6 +70,9 @@ export class Segmenter<WithSpans extends boolean = false> {
       throw new TypeError('Text must be a string, null, or undefined.')
     }
     const input = this.clean ? cleanText(text, this.language) : text
+    if (this.clean && input === '') {
+      return ''
+    }
     const sentences = processText(input, this.language)
     if (this.clean) {
       return sentences
@@ -64,8 +81,8 @@ export class Segmenter<WithSpans extends boolean = false> {
     const spans: SentenceSpan[] = []
     let previousEnd = 0
     for (const sentence of sentences) {
-      for (const match of text.matchAll(
-        pattern(`${escapePattern(sentence)}\\s*`),
+      for (const match of pattern(`${escapePattern(sentence)}\\s*`).finditer(
+        text,
       )) {
         const end = match.index + match[0].length
         if (end > previousEnd) {

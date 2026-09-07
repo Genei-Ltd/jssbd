@@ -60,10 +60,10 @@ export function processText(input: string, language: LanguageCode): string[] {
       text = text.replace(pattern(String.raw`(?<=\d)\.(?=\s*[a-z]+)`), '∯')
       // pySBD passes re.IGNORECASE as the replacement count, so this is two
       // case-sensitive replacements rather than case-insensitive matching.
-      let replacements = 0
-      text = text.replace(
-        pattern(String.raw`((\s+[VXI]+)|(^[VXI]+))\.(?=\s+)`),
-        (match) => (replacements++ < 2 ? `${match.slice(0, -1)}∯` : match),
+      text = pattern(String.raw`((\s+[VXI]+)|(^[VXI]+))\.(?=\s+)`).sub(
+        String.raw`\1∯`,
+        text,
+        2,
       )
     }
   }
@@ -117,9 +117,9 @@ export function processText(input: string, language: LanguageCode): string[] {
           .replace(pattern(String.raw`(?<=\d):(?=\d)`), '♭')
           .replace(pattern(String.raw`،(?=\s\S+،)`), '♬')
       }
-      line = line.replace(/&ᓴ&$/u, '!')
+      line = line.replace(pattern('&ᓴ&$'), '!')
       sentences = Array.from(
-        line.matchAll(pattern(config.boundary)),
+        pattern(config.boundary).finditer(line),
         (match) => match[0],
       )
     } else {
@@ -138,13 +138,9 @@ export function processText(input: string, language: LanguageCode): string[] {
         )
       ) {
         processed.push(
-          ...sentence
-            .split(
-              pattern(
-                data.regex.SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX,
-              ),
-            )
-            .filter(Boolean),
+          ...pattern(data.regex.SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX)
+            .split(sentence)
+            .filter((value): value is string => Boolean(value)),
         )
       } else {
         const trimmed = trimWhitespace(sentence.replace(/\n/g, ''))

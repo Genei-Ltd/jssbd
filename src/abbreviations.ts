@@ -1,5 +1,6 @@
 import data from './data.json'
 import { applyRules, escapePattern, pattern, trimWhitespace } from './regex'
+import { isUppercase, lowercase } from './unicode'
 
 export type LanguageData = typeof data.common
 
@@ -42,13 +43,13 @@ export function replaceAbbreviations(
     if (language === 'de') {
       return line.replace(pattern(`(?<=${abbreviation})\\.(?=\\s)`), '∯')
     }
-    const lower = stripped.toLowerCase()
+    const lower = lowercase(stripped)
     if (config.prepositive.includes(lower)) {
       return ` ${line}`
         .replace(pattern(`(?<=\\s${stripped})\\.(?=(\\s|:\\d+))`), '∯')
         .slice(1)
     }
-    if (/\p{Uppercase}/u.test(character)) {
+    if (isUppercase(character)) {
       return line
     }
     if (config.numberAbbreviations.includes(lower)) {
@@ -78,22 +79,23 @@ export function replaceAbbreviations(
   }
 
   function scan(line: string): string {
-    const lower = line.toLowerCase()
+    const lower = lowercase(line)
     for (const abbreviation of config.abbreviations) {
       const stripped = trimWhitespace(abbreviation)
       if (!lower.includes(stripped)) {
         continue
       }
       const matches = Array.from(
-        line.matchAll(pattern(`(?:^|\\s|\\r|\\n)${stripped}`, 'gi')),
-        (match) => match[0],
+        pattern(`(?:^|\\s|\\r|\\n)${stripped}`, 'gi').finditer(line),
+        // pySBD's findall returns the single capture in Dutch/Italian entries.
+        (match) => (match.length > 1 ? (match[1] ?? '') : match[0]),
       )
       if (matches.length === 0) {
         continue
       }
       // Keep pySBD's literal braces and match-index alignment.
       const characters = Array.from(
-        line.matchAll(pattern(`(?<=\\{${escapePattern(stripped)}\\} ).`)),
+        pattern(`(?<=\\{${escapePattern(stripped)}\\} ).`).finditer(line),
         (match) => match[0],
       )
       for (const [index, match] of matches.entries()) {
