@@ -30,34 +30,35 @@ export function replaceAbbreviations(
     )
   }
 
-  function replacePeriod(line: string, abbreviation: string): string {
-    const escaped = escapePattern(trimWhitespace(abbreviation))
+  function replacePeriod(
+    line: string,
+    abbreviation: string,
+    character: string,
+  ): string {
+    const stripped = trimWhitespace(abbreviation)
     if (language === 'ar' || language === 'fa') {
-      return line.replace(
-        pattern(`(?<=${escapePattern(abbreviation)})\\.`),
-        '∯',
-      )
+      return line.replace(pattern(`(?<=${abbreviation})\\.`), '∯')
     }
     if (language === 'de') {
-      return line.replace(
-        pattern(`(?<=${escapePattern(abbreviation)})\\.(?=\\s)`),
-        '∯',
-      )
+      return line.replace(pattern(`(?<=${abbreviation})\\.(?=\\s)`), '∯')
     }
-    const lower = trimWhitespace(abbreviation).toLowerCase()
+    const lower = stripped.toLowerCase()
     if (config.prepositive.includes(lower)) {
       return ` ${line}`
-        .replace(pattern(`(?<=\\s${escaped})\\.(?=(\\s|:\\d+))`), '∯')
+        .replace(pattern(`(?<=\\s${stripped})\\.(?=(\\s|:\\d+))`), '∯')
         .slice(1)
+    }
+    if (/\p{Uppercase}/u.test(character)) {
+      return line
     }
     if (config.numberAbbreviations.includes(lower)) {
       return ` ${line}`
-        .replace(pattern(`(?<=\\s${escaped})\\.(?=(\\s\\d|\\s+\\())`), '∯')
+        .replace(pattern(`(?<=\\s${stripped})\\.(?=(\\s\\d|\\s+\\())`), '∯')
         .slice(1)
     }
     if (language === 'ru' || language === 'bg') {
       return line.replace(
-        pattern(`(?<=\\s${escaped})\\.|(?<=^${escaped})\\.`),
+        pattern(`(?<=\\s${stripped})\\.|(?<=^${stripped})\\.`),
         '∯',
       )
     }
@@ -69,7 +70,7 @@ export function replaceAbbreviations(
     return ` ${line}`
       .replace(
         pattern(
-          `(?<=\\s${escaped})\\.(?=((\\.|:|-|\\?|,)|(\\s([a-z]|I\\s|I'm|I'll|\\d|\\())))`,
+          `(?<=\\s${escapePattern(stripped)})\\.(?=((\\.|:|-|\\?|,)|(\\s([a-z]|I\\s|I'm|I'll|\\d|\\())))`,
         ),
         '∯',
       )
@@ -87,8 +88,16 @@ export function replaceAbbreviations(
         line.matchAll(pattern(`(?:^|\\s|\\r|\\n)${stripped}`, 'gi')),
         (match) => match[0],
       )
-      for (const match of matches) {
-        line = replacePeriod(line, match)
+      if (matches.length === 0) {
+        continue
+      }
+      // Keep pySBD's literal braces and match-index alignment.
+      const characters = Array.from(
+        line.matchAll(pattern(`(?<=\\{${escapePattern(stripped)}\\} ).`)),
+        (match) => match[0],
+      )
+      for (const [index, match] of matches.entries()) {
+        line = replacePeriod(line, match, characters[index] ?? '')
       }
     }
     return line
